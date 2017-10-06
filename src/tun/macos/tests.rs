@@ -10,11 +10,17 @@ use tun::macos::create;
 fn test_tun_create() {
     let mut config = configuration::Configuration::default();
 
-    let addr = Ipv4Addr::from_str("192.168.50.1").unwrap();
+    let addr = Ipv4Addr::from_str("192.168.50.2").unwrap();
     let netmask = Ipv4Addr::from_str("255.255.0.0").unwrap();
+    let destination = Ipv4Addr::from_str("192.168.50.1").unwrap();
     let mtu = 1480;
 
-    config.name("utun6").address(addr).netmask(netmask).mtu(mtu).up();
+    config.name("utun6")
+        .address(addr)
+        .netmask(netmask)
+        .destination(destination)
+        .mtu(mtu)
+        .up();
 
     let dev = create(&config).unwrap();
 
@@ -23,6 +29,9 @@ fn test_tun_create() {
 
     let g_netmask: Ipv4Addr = dev.netmask().unwrap().into();
     assert_eq!(netmask, g_netmask);
+
+    let g_destination: Ipv4Addr = dev.destination().unwrap().into();
+    assert_eq!(destination, g_destination);
 
     let g_mtu = dev.mtu().unwrap();
     assert_eq!(mtu, g_mtu);
