@@ -103,13 +103,13 @@ impl Tun for Device {
                 return Err(io::Error::last_os_error().into());
             }
 
-            SockAddr::new(&req.ifr_ifru.ifr_addr).map(Into::into)
+            SockAddr::new(&req.ifr_ifru.ifru_addr).map(Into::into)
         }
     }
     fn set_address(&mut self, value: Ipv4Addr) -> Result<()> {
         unsafe {
             let mut req = self.request();
-            req.ifr_ifru.ifr_addr = SockAddr::from(value).into();
+            req.ifr_ifru.ifru_addr = SockAddr::from(value).into();
 
             if siocsifaddr(self.ctl.as_raw_fd(), &req) < 0 {
                 return Err(io::Error::last_os_error().into());
@@ -127,13 +127,13 @@ impl Tun for Device {
                 return Err(io::Error::last_os_error().into());
             }
 
-            SockAddr::new(&req.ifr_ifru.ifr_broadaddr).map(Into::into)
+            SockAddr::new(&req.ifr_ifru.ifru_broadaddr).map(Into::into)
         }
     }
     fn set_broadcast(&mut self, value: Ipv4Addr) -> Result<()> {
         unsafe {
             let mut req = self.request();
-            req.ifr_ifru.ifr_broadaddr = SockAddr::from(value).into();
+            req.ifr_ifru.ifru_broadaddr = SockAddr::from(value).into();
 
             if siocsifbrdaddr(self.ctl.as_raw_fd(), &req) < 0 {
                 return Err(io::Error::last_os_error().into());
@@ -151,13 +151,13 @@ impl Tun for Device {
                 return Err(io::Error::last_os_error().into());
             }
 
-            SockAddr::new(&req.ifr_ifru.ifr_dstaddr).map(Into::into)
+            SockAddr::new(&req.ifr_ifru.ifru_dstaddr).map(Into::into)
         }
     }
     fn set_destination(&mut self, value: Ipv4Addr) -> Result<()> {
         unsafe {
             let mut req = self.request();
-            req.ifr_ifru.ifr_dstaddr = SockAddr::from(value).into();
+            req.ifr_ifru.ifru_dstaddr = SockAddr::from(value).into();
 
             if siocsifdstaddr(self.ctl.as_raw_fd(), &req) < 0 {
                 return Err(io::Error::last_os_error().into());
@@ -175,13 +175,13 @@ impl Tun for Device {
                 return Err(io::Error::last_os_error().into());
             }
 
-            SockAddr::unchecked(&req.ifr_ifru.ifr_addr).map(Into::into)
+            SockAddr::unchecked(&req.ifr_ifru.ifru_addr).map(Into::into)
         }
     }
     fn set_netmask(&mut self, value: Ipv4Addr) -> Result<()> {
         unsafe {
             let mut req = self.request();
-            req.ifr_ifru.ifr_addr = SockAddr::from(value).into();
+            req.ifr_ifru.ifru_addr = SockAddr::from(value).into();
 
             if siocsifnetmask(self.ctl.as_raw_fd(), &req) < 0 {
                 return Err(io::Error::last_os_error().into());
@@ -199,13 +199,13 @@ impl Tun for Device {
                 return Err(io::Error::last_os_error().into());
             }
 
-            Ok(req.ifr_ifru.ifr_mtu)
+            Ok(req.ifr_ifru.ifru_mtu)
         }
     }
     fn set_mtu(&mut self, value: i32) -> Result<()> {
         unsafe {
             let mut req = self.request();
-            req.ifr_ifru.ifr_mtu = value;
+            req.ifr_ifru.ifru_mtu = value;
 
             if siocsifmtu(self.ctl.as_raw_fd(), &req) < 0 {
                 return Err(io::Error::last_os_error().into());
@@ -223,7 +223,7 @@ impl Tun for Device {
                 return Err(io::Error::last_os_error().into());
             }
 
-            Ok(req.ifr_ifru.ifr_flags)
+            Ok(req.ifr_ifru.ifru_flags)
         }
     }
     fn set_flags(&mut self, value: i16) -> Result<()> {
@@ -233,7 +233,7 @@ impl Tun for Device {
         unsafe {
             let mut req = self.request();
 
-            req.ifr_ifru.ifr_flags = if value < 0 {
+            req.ifr_ifru.ifru_flags = if value < 0 {
                 value = -value;
                 origin_flags & !value
             } else {
