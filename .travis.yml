@@ -1,0 +1,10 @@
+language: rust
+
+rust:
+  - stable
+  - nightly
+
+before_install:
+  - sudo apt-get -qq update
+
+sudo: required
