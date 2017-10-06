@@ -10,5 +10,7 @@ rust:
   - stable
   - nightly
 
-script:
-  - sudo /home/travis/.cargo/bin/cargo test --features="travis-ci"
+script: |
+  cargo=`which cargo`
+  sudo $cargo test --features="travis-ci"
+
