@@ -5,7 +5,7 @@ use tun::Tun;
 use tun::configuration;
 use tun::linux::create;
 
-
+#[cfg(feature = "tun-test")]
 #[test]
 fn test_tun_create() {
     let mut config = configuration::Configuration::default();

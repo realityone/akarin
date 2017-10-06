@@ -1,5 +1,6 @@
 language: rust
 sudo: required
+dist: trusty
 
 os:
   - linux
@@ -10,4 +11,4 @@ rust:
   - nightly
 
 script:
-  - sudo cargo test
+  - sudo /home/travis/.cargo/bin/cargo test --features="travis-ci"
