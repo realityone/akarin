@@ -21,6 +21,7 @@ pub fn create(configuration: &Configuration) -> Result<Device> {
     Device::from_configuration(&configuration)
 }
 
+#[derive(Debug)]
 pub struct Device {
     name: String,
     tun: File,
