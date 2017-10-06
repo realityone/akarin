@@ -345,7 +345,7 @@ impl Configurable for Device {
         }
 
         if let Some(ip) = configuration.destination {
-            self.set_address(ip)?;
+            self.set_destination(ip)?;
         }
 
         if let Some(ip) = configuration.broadcast {
