@@ -1,5 +1,3 @@
-#![allow(unused_variables)]
-
 use std::mem;
 use std::ptr;
 use std::fs::File;
