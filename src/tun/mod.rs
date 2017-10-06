@@ -1,9 +1,20 @@
-pub mod configuration;
-
 #[cfg(target_os = "macos")]
 pub mod macos;
 #[cfg(target_os = "linux")]
 pub mod linux;
+pub mod configuration;
+
+#[cfg(target_os = "macos")]
+pub use self::macos as os;
+#[cfg(target_os = "macos")]
+pub use self::macos::create;
+
+#[cfg(target_os = "linux")]
+pub use self::linux as os;
+#[cfg(target_os = "linux")]
+pub use self::linux::create;
+
+pub use self::configuration::Configuration;
 
 use std::net::Ipv4Addr;
 use std::io::{Write, Read};
