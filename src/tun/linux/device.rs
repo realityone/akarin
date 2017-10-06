@@ -235,40 +235,43 @@ impl Configurable for Device {
             None => None,
         };
 
-        let mut device;
-        unsafe {
-            let tun = open(b"/dev/net/tun\0".as_ptr() as *const _, O_RDWR);
-            if tun < 0 {
-                return Err(io::Error::last_os_error().into());
-            }
+        let tun = unsafe { open(b"/dev/net/tun\0".as_ptr() as *const _, O_RDWR) };
+        if tun < 0 {
+            return Err(io::Error::last_os_error().into());
+        }
 
-            let mut req: ifreq = mem::zeroed();
+        let mut req: ifreq = unsafe { mem::zeroed() };
 
-            if let Some(device_name) = device_name.as_ref() {
+        if let Some(device_name) = device_name.as_ref() {
+            unsafe {
                 ptr::copy_nonoverlapping(device_name.as_ptr() as *const c_char,
                                          req.ifr_ifrn.ifrn_name.as_mut_ptr(),
-                                         device_name.as_bytes().len());
-            }
+                                         device_name.as_bytes().len())
+            };
+        }
 
-            // TODO: add IFF_NO_PI flag?
-            req.ifr_ifru.ifru_flags = IFF_TUN;
+        // TODO: add IFF_NO_PI flag?
+        req.ifr_ifru.ifru_flags = IFF_TUN;
 
+        unsafe {
             if tunsetiff(tun, &mut req as *mut _ as *mut _) < 0 {
                 close(tun);
                 return Err(io::Error::last_os_error().into());
             }
+        }
 
-            let ctl = socket(AF_INET, SOCK_DGRAM, 0);
-            if ctl < 0 {
-                return Err(io::Error::last_os_error().into());
-            }
+        let ctl = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
+        if ctl < 0 {
+            return Err(io::Error::last_os_error().into());
+        }
 
-            device = Device {
+        let mut device = unsafe {
+            Device {
                 name: CStr::from_ptr(req.ifr_ifrn.ifrn_name.as_ptr()).to_string_lossy().into(),
                 tun: File::from_raw_fd(tun),
                 ctl: File::from_raw_fd(ctl),
-            };
-        }
+            }
+        };
 
         device.configure(configuration)?;
         Ok(device)

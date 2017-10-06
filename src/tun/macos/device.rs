@@ -271,66 +271,72 @@ impl Configurable for Device {
             None => 0,
         };
 
-        let mut device;
+        let tun = unsafe { socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL) };
+        if tun < 0 {
+            return Err(io::Error::last_os_error().into());
+        }
+
+        let mut info = ctl_info {
+            ctl_id: 0,
+            ctl_name: {
+                let mut buffer = [0u8; 96];
+                buffer[..UTUN_CONTROL_NAME.len()].clone_from_slice(UTUN_CONTROL_NAME.as_bytes());
+                buffer
+            },
+        };
+
         unsafe {
-            let tun = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
-            if tun < 0 {
-                return Err(io::Error::last_os_error().into());
-            }
-
-            let mut info = ctl_info {
-                ctl_id: 0,
-                ctl_name: {
-                    let mut buffer = [0u8; 96];
-                    buffer[..UTUN_CONTROL_NAME.len()]
-                        .clone_from_slice(UTUN_CONTROL_NAME.as_bytes());
-                    buffer
-                },
-            };
-
             if ctliocginfo(tun, &mut info as *mut _ as *mut _) < 0 {
                 close(tun);
                 return Err(io::Error::last_os_error().into());
             }
+        }
 
-            let addr = sockaddr_ctl {
-                sc_id: info.ctl_id,
-                sc_len: mem::size_of::<sockaddr_ctl>() as u8,
-                sc_family: AF_SYSTEM,
-                ss_sysaddr: AF_SYS_CONTROL,
-                sc_unit: dev_id as u32 + 1,
-                sc_reserved: [0; 5],
-            };
+        let addr = sockaddr_ctl {
+            sc_id: info.ctl_id,
+            sc_len: mem::size_of::<sockaddr_ctl>() as u8,
+            sc_family: AF_SYSTEM,
+            ss_sysaddr: AF_SYS_CONTROL,
+            sc_unit: dev_id as u32 + 1,
+            sc_reserved: [0; 5],
+        };
 
-            if connect(tun,
-                       &addr as *const sockaddr_ctl as *const sockaddr,
-                       mem::size_of_val(&addr) as socklen_t) < 0
-            {
-                return Err(io::Error::last_os_error().into());
-            }
 
-            let mut name_buf = [0u8; 64];
-            let mut name_length: socklen_t = 64;
-            if getsockopt(tun,
-                          SYSPROTO_CONTROL,
-                          UTUN_OPT_IFNAME,
-                          &mut name_buf as *mut _ as *mut c_void,
-                          &mut name_length as *mut socklen_t) < 0
-            {
-                return Err(io::Error::last_os_error().into());
-            }
+        if unsafe {
+            connect(tun,
+                    &addr as *const sockaddr_ctl as *const sockaddr,
+                    mem::size_of_val(&addr) as socklen_t)
+        } < 0
+        {
+            return Err(io::Error::last_os_error().into());
+        }
 
-            let ctl = socket(AF_INET, SOCK_DGRAM, 0);
-            if ctl < 0 {
-                return Err(io::Error::last_os_error().into());
-            }
 
-            device = Device {
+        let mut name_buf = [0u8; 64];
+        let mut name_length: socklen_t = 64;
+        if unsafe {
+            getsockopt(tun,
+                       SYSPROTO_CONTROL,
+                       UTUN_OPT_IFNAME,
+                       &mut name_buf as *mut _ as *mut c_void,
+                       &mut name_length as *mut socklen_t)
+        } < 0
+        {
+            return Err(io::Error::last_os_error().into());
+        }
+
+        let ctl = unsafe { socket(AF_INET, SOCK_DGRAM, 0) };
+        if ctl < 0 {
+            return Err(io::Error::last_os_error().into());
+        }
+
+        let mut device = unsafe {
+            Device {
                 name: CStr::from_ptr(name_buf.as_ptr() as *const c_char).to_string_lossy().into(),
                 tun: File::from_raw_fd(tun),
                 ctl: File::from_raw_fd(ctl),
-            };
-        }
+            }
+        };
 
         device.configure(configuration)?;
         Ok(device)
