@@ -57,23 +57,24 @@ pub struct ifkpi {
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union _ifr_ifru {
-    pub ifr_addr: sockaddr,
-    pub ifr_dstaddr: sockaddr,
-    pub ifr_broadaddr: sockaddr,
+    pub ifru_addr: sockaddr,
+    pub ifru_dstaddr: sockaddr,
+    pub ifru_broadaddr: sockaddr,
 
-    pub ifr_flags: c_short,
-    pub ifr_metric: c_int,
-    pub ifr_mtu: c_int,
-    pub ifr_phys: c_int,
-    pub ifr_media: c_int,
-    pub ifr_intval: c_int,
-    pub ifr_data: *mut c_void,
-    pub ifr_devmtu: ifdevmtu,
-    pub ifr_wake_flags: c_uint,
-    pub ifr_route_refcnt: c_uint,
+    pub ifru_flags: c_short,
+    pub ifru_metric: c_int,
+    pub ifru_mtu: c_int,
+    pub ifru_phys: c_int,
+    pub ifru_media: c_int,
+    pub ifru_intval: c_int,
+    pub ifru_data: *mut c_void,
+    pub ifru_devmtu: ifdevmtu,
+    pub ifru_kpi: ifkpi,
+    pub ifru_wake_flags: c_uint,
+    pub ifru_route_refcnt: c_uint,
     pub ifr_reqcap: [c_int; 1],
     pub ifr_curcap: [c_int; 1],
-    pub ifr_functional_type: c_uint,
+    pub ifru_functional_type: c_uint,
 }
 
 #[repr(C)]

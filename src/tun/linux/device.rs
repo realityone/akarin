@@ -3,14 +3,12 @@
 use std::mem;
 use std::ptr;
 use std::fs::File;
-use std::ffi::CStr;
-use std::str::FromStr;
 use std::net::Ipv4Addr;
+use std::ffi::{CStr, CString};
 use std::io::{self, Read, Write};
 use std::os::unix::io::{AsRawFd, FromRawFd};
 
-use libc::{socket, connect, close, getsockopt, SOCK_DGRAM, AF_INET, socklen_t, sockaddr, c_void,
-           c_char};
+use libc::{socket, close, SOCK_DGRAM, AF_INET, c_char, O_RDWR, open};
 
 use tun::Tun;
 use common::error::*;
@@ -33,44 +31,10 @@ impl Device {
     pub unsafe fn request(&self) -> ifreq {
         let mut req: ifreq = mem::zeroed();
         ptr::copy_nonoverlapping(self.name.as_ptr() as *const c_char,
-                                 req.ifr_name.as_mut_ptr(),
+                                 req.ifr_ifrn.ifrn_name.as_mut_ptr(),
                                  self.name.len());
 
         req
-    }
-
-    pub unsafe fn alias_request(&self) -> ifaliasreq {
-        let mut alias_req: ifaliasreq = mem::zeroed();
-        ptr::copy_nonoverlapping(self.name.as_ptr() as *const c_char,
-                                 alias_req.ifra_name.as_mut_ptr(),
-                                 self.name.len());
-
-        alias_req
-    }
-
-    pub fn ipv4(&mut self, addr: Ipv4Addr, broadaddr: Ipv4Addr, mask: Ipv4Addr) -> Result<()> {
-        unsafe {
-            let mut alias_req = self.alias_request();
-            alias_req.ifra_addr = SockAddr::from(addr).into();
-            alias_req.ifra_broadaddr = SockAddr::from(broadaddr).into();
-            alias_req.ifra_mask = SockAddr::from(mask).into();
-
-            if siocaifaddr(self.ctl.as_raw_fd(), &alias_req) < 0 {
-                return Err(io::Error::last_os_error().into());
-            }
-            Ok(())
-        }
-    }
-
-    pub fn delete_addr(&mut self) -> Result<()> {
-        unsafe {
-            let req = self.request();
-
-            if siocdifaddr(self.ctl.as_raw_fd(), &req) < 0 {
-                return Err(io::Error::last_os_error().into());
-            }
-            Ok(())
-        }
     }
 }
 
@@ -175,13 +139,13 @@ impl Tun for Device {
                 return Err(io::Error::last_os_error().into());
             }
 
-            SockAddr::unchecked(&req.ifr_ifru.ifru_addr).map(Into::into)
+            SockAddr::unchecked(&req.ifr_ifru.ifru_netmask).map(Into::into)
         }
     }
     fn set_netmask(&mut self, value: Ipv4Addr) -> Result<()> {
         unsafe {
             let mut req = self.request();
-            req.ifr_ifru.ifru_addr = SockAddr::from(value).into();
+            req.ifr_ifru.ifru_netmask = SockAddr::from(value).into();
 
             if siocsifnetmask(self.ctl.as_raw_fd(), &req) < 0 {
                 return Err(io::Error::last_os_error().into());
@@ -261,66 +225,40 @@ impl Tun for Device {
 
 impl Configurable for Device {
     fn from_configuration(configuration: &Configuration) -> Result<Self> {
-        let dev_id = match configuration.name.as_ref() {
+        let device_name = match configuration.name.as_ref() {
             Some(name) => {
-                if name.len() > IFNAMSIZ {
+                let name = CString::new(name.clone())?;
+
+                if name.as_bytes_with_nul().len() > IFNAMSIZ {
                     return Err(ErrorKind::NameTooLong.into());
                 }
-                if !name.starts_with("utun") {
-                    return Err(ErrorKind::InvalidName.into());
-                }
-                u8::from_str(&name["utun".len()..])? as u8
+
+                Some(name)
             }
 
-            None => 0,
+            None => None,
         };
 
         let mut device;
         unsafe {
-            let tun = socket(PF_SYSTEM, SOCK_DGRAM, SYSPROTO_CONTROL);
+            let tun = open(b"/dev/net/tun\0".as_ptr() as *const _, O_RDWR);
             if tun < 0 {
                 return Err(io::Error::last_os_error().into());
             }
 
-            let mut info = ctl_info {
-                ctl_id: 0,
-                ctl_name: {
-                    let mut buffer = [0u8; 96];
-                    buffer[..UTUN_CONTROL_NAME.len()]
-                        .clone_from_slice(UTUN_CONTROL_NAME.as_bytes());
-                    buffer
-                },
-            };
+            let mut req: ifreq = mem::zeroed();
 
-            if ctliocginfo(tun, &mut info as *mut _ as *mut _) < 0 {
+            if let Some(device_name) = device_name.as_ref() {
+                ptr::copy_nonoverlapping(device_name.as_ptr() as *const c_char,
+                                         req.ifr_ifrn.ifrn_name.as_mut_ptr(),
+                                         device_name.as_bytes().len());
+            }
+
+            // TODO: add IFF_NO_PI flag?
+            req.ifr_ifru.ifru_flags = IFF_TUN;
+
+            if tunsetiff(tun, &mut req as *mut _ as *mut _) < 0 {
                 close(tun);
-                return Err(io::Error::last_os_error().into());
-            }
-
-            let addr = sockaddr_ctl {
-                sc_id: info.ctl_id,
-                sc_len: mem::size_of::<sockaddr_ctl>() as u8,
-                sc_family: AF_SYSTEM,
-                ss_sysaddr: AF_SYS_CONTROL,
-                sc_unit: dev_id as u32 + 1,
-                sc_reserved: [0; 5],
-            };
-
-            if connect(tun,
-                       &addr as *const sockaddr_ctl as *const sockaddr,
-                       mem::size_of_val(&addr) as socklen_t) < 0
-            {
-                return Err(io::Error::last_os_error().into());
-            }
-
-            let mut name_buf = [0u8; 64];
-            let mut name_length: socklen_t = 64;
-            if getsockopt(tun,
-                          SYSPROTO_CONTROL,
-                          UTUN_OPT_IFNAME,
-                          &mut name_buf as *mut _ as *mut c_void,
-                          &mut name_length as *mut socklen_t) < 0
-            {
                 return Err(io::Error::last_os_error().into());
             }
 
@@ -330,7 +268,7 @@ impl Configurable for Device {
             }
 
             device = Device {
-                name: CStr::from_ptr(name_buf.as_ptr() as *const c_char).to_string_lossy().into(),
+                name: CStr::from_ptr(req.ifr_ifrn.ifrn_name.as_ptr()).to_string_lossy().into(),
                 tun: File::from_raw_fd(tun),
                 ctl: File::from_raw_fd(ctl),
             };
