@@ -211,8 +211,6 @@ impl Tun for Device {
     }
 
     fn set_enabled(&mut self, value: bool) -> Result<()> {
-        let origin_flags = self.flags()?;
-
         if value {
             return self.set_flags(IFF_UP | IFF_RUNNING);
         }
