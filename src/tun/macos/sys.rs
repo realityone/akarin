@@ -14,10 +14,18 @@ pub const UTUN_CONTROL_NAME: &'static str = "com.apple.net.utun_control";
 
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy)]
 pub struct ctl_info {
     pub ctl_id: c_uint,
     pub ctl_name: [c_uchar; 96],
+}
+
+// The current stable rust array type only implement `Clone` trait which is less than 32 elements.
+// see https://github.com/rust-lang/rust/issues/24288
+impl Clone for ctl_info {
+    fn clone(&self) -> Self {
+        *self
+    }
 }
 
 #[repr(C)]

@@ -16,11 +16,11 @@ fn test_tun_create() {
     let mtu = 1480;
 
     config.name("utun6")
-        .address(addr)
-        .netmask(netmask)
-        .destination(destination)
-        .mtu(mtu)
-        .up();
+          .address(addr)
+          .netmask(netmask)
+          .destination(destination)
+          .mtu(mtu)
+          .up();
 
     let dev = create(&config).unwrap();
 
