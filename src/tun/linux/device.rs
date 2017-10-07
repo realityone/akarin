@@ -227,7 +227,7 @@ impl Configurable for Device {
                 let name = CString::new(name.clone())?;
 
                 if name.as_bytes_with_nul().len() > IFNAMSIZ {
-                    return Err(ErrorKind::NameTooLong.into());
+                    return Err(ErrorKind::TunNameTooLong.into());
                 }
 
                 Some(name)
