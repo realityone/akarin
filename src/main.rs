@@ -8,7 +8,7 @@ extern crate sodiumoxide;
 extern crate error_chain;
 extern crate pretty_env_logger;
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(unix)]
 #[macro_use]
 extern crate ioctl_sys;
 

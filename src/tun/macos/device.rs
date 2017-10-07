@@ -5,7 +5,7 @@ use std::ffi::CStr;
 use std::str::FromStr;
 use std::net::Ipv4Addr;
 use std::io::{self, Read, Write};
-use std::os::unix::io::{AsRawFd, FromRawFd};
+use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 
 use libc::{socket, connect, close, getsockopt, SOCK_DGRAM, AF_INET, socklen_t, sockaddr, c_void,
            c_char};
@@ -86,6 +86,12 @@ impl Write for Device {
 
     fn flush(&mut self) -> io::Result<()> {
         self.tun.flush()
+    }
+}
+
+impl AsRawFd for Device {
+    fn as_raw_fd(&self) -> RawFd {
+        self.tun.as_raw_fd()
     }
 }
 
