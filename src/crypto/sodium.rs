@@ -1,11 +1,16 @@
 use sodiumoxide;
 
-use super::Cipher;
+use sodiumoxide::crypto::hash;
+
+use super::Crypto;
 use common::error::*;
 
-pub struct Sodium;
+#[derive(Default)]
+pub struct Sodium {
+    key: Option<[u8; 32]>,
+}
 
-impl Cipher for Sodium {
+impl Crypto for Sodium {
     fn init(&mut self) -> Result<()> {
         if !sodiumoxide::init() {
             return Err(ErrorKind::InitCryptoFailed.into());
@@ -16,5 +21,14 @@ impl Cipher for Sodium {
 
     fn name() -> String {
         "sodium".to_string()
+    }
+
+    fn set_password(&mut self, password: &str) -> Result<()> {
+        if let Some(_) = self.key {
+            return Err(ErrorKind::CryptoPasswordAlreadySetted.into());
+        }
+
+        self.key = Some(hash::sha256::hash(password.as_bytes()).0);
+        Ok(())
     }
 }

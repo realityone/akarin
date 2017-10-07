@@ -19,14 +19,20 @@ mod transport;
 
 use common::error::*;
 
-fn init<C>(crypto: &mut C) -> Result<()>
-    where C: crypto::Cipher {
-    info!("Initializing crypto `{}`", C::name());
+fn init_crypto<C>(crypto: &mut C, password: &str) -> Result<()>
+where
+    C: crypto::Crypto,
+{
+    info!("Initializing crypto: `{}`", C::name());
     if let Err(e) = crypto.init() {
-        info!("Failed to init crypto: `{}`", C::name());
+        info!("Failed to init crypto: `{}`, {}", C::name(), e);
         return Err(e);
     }
-    info!("Initializing components succeed: crypto=`{}`", C::name());
+    if let Err(e) = crypto.set_password(password) {
+        info!("Failed to set crypto password: `{}`, {}", C::name(), e);
+        return Err(e);
+    }
+    info!("Initializing crypto succeed: `{}`", C::name());
     Ok(())
 }
 
@@ -34,6 +40,7 @@ fn main() {
     // setup logger
     pretty_env_logger::init().unwrap();
 
-    let ref mut crypto = crypto::sodium::Sodium {};
-    init(crypto).unwrap();
+    let password = "realityone";
+    let ref mut crypto = crypto::sodium::Sodium::default();
+    init_crypto(crypto, password).unwrap();
 }
