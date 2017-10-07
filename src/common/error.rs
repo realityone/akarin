@@ -7,8 +7,6 @@ error_chain! {
 
         // Crypto
         InitCryptoFailed
-        CryptoPasswordAlreadySetted
-        InvalidMessage
 	}
 
     foreign_links {
