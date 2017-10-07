@@ -7,7 +7,7 @@ error_chain! {
 
         // Crypto
         InitCryptoFailed
-	}
+    }
 
     foreign_links {
         Io(::std::io::Error);
