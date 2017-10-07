@@ -23,6 +23,7 @@ before_install: |
           ./configure
           make && make check
           sudo make install
+          sudo ldconfig
           popd
           ;;
   esac
