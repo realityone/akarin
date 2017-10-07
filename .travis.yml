@@ -13,7 +13,7 @@ rust:
 before_install: |
   case $TRAVIS_OS_NAME in
       osx)
-          brew udpate
+          brew update
           brew install libsodium
           ;;
       linux)
