@@ -13,6 +13,7 @@ extern crate pretty_env_logger;
 extern crate ioctl_sys;
 
 mod tun;
+mod akarin;
 mod common;
 mod crypto;
 mod transport;

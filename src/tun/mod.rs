@@ -16,12 +16,13 @@ pub use self::linux::create;
 
 pub use self::configuration::Configuration;
 
+use std::fmt::Debug;
 use std::net::Ipv4Addr;
 use std::io::{Write, Read};
 
 use common::error::*;
 
-pub trait Tun: Read + Write {
+pub trait Tun: Read + Write + Debug {
     fn name(&self) -> &str;
 
     fn address(&self) -> Result<Ipv4Addr>;

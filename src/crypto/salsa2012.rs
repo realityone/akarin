@@ -12,8 +12,8 @@ pub fn init_crypto(password: &str) -> Box<Crypto> {
 
     let crypto =
         Box::new(Salsa2012::new(password.as_bytes())
-            .map_err(|e| info!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
-            .unwrap());
+                     .map_err(|e| info!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
+                     .unwrap());
 
     info!("Initializing crypto succeed: `{}`", Salsa2012::name());
     crypto
@@ -87,7 +87,8 @@ mod test {
         let origin_message = br#"# akarin
 
 Lightweight and stateless IP tunnel.
-"#.to_vec();
+"#
+                             .to_vec();
         let crypto = Salsa2012::new(b"realityone").unwrap();
 
         let cipher_text = {

@@ -1,9 +1,11 @@
 #[cfg(feature = "libsodium")]
 pub mod salsa2012;
 
+use std::fmt::Debug;
+
 use common::error::*;
 
-pub trait Crypto {
+pub trait Crypto: Debug {
     fn name(&self) -> String;
 
     fn encrypt(&self, message: &[u8]) -> Result<Vec<u8>>;
@@ -20,9 +22,7 @@ impl Ciphers {
     pub fn init(self, password: &str) -> Box<Crypto> {
         match self {
             #[cfg(feature = "libsodium")]
-            Ciphers::SALSA2012 => {
-                salsa2012::init_crypto(password)
-            }
+            Ciphers::SALSA2012 => salsa2012::init_crypto(password),
         }
     }
 }
@@ -33,7 +33,7 @@ impl<'a> From<&'a str> for Ciphers {
             #[cfg(feature = "libsodium")]
             "libsodium" => Ciphers::SALSA2012,
             #[cfg(feature = "libsodium")]
-            _ => Ciphers::SALSA2012
+            _ => Ciphers::SALSA2012,
         }
     }
 }
