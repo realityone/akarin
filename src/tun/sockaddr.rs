@@ -9,7 +9,7 @@ use libc::{c_uint, c_ushort};
 use libc::{in_addr, sockaddr, sockaddr_in};
 use libc::AF_INET as _AF_INET;
 
-use super::error::*;
+use common::error::*;
 
 
 /// A wrapper for `sockaddr_in`.

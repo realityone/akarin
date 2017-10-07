@@ -2,6 +2,7 @@
 pub mod macos;
 #[cfg(target_os = "linux")]
 pub mod linux;
+pub mod sockaddr;
 pub mod configuration;
 
 #[cfg(target_os = "macos")]

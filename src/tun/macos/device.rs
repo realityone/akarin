@@ -9,9 +9,9 @@ use std::str::FromStr;
 use libc::{AF_INET, SOCK_DGRAM, c_char, c_void, close, connect, getsockopt, sockaddr, socket, socklen_t};
 
 use common::error::*;
-use common::sockaddr::SockAddr;
 use tun::Tun;
 use tun::configuration::{Configurable, Configuration};
+use tun::sockaddr::SockAddr;
 
 use super::sys::*;
 

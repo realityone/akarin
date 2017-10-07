@@ -8,9 +8,9 @@ use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use libc::{AF_INET, O_RDWR, SOCK_DGRAM, c_char, close, open, socket};
 
 use common::error::*;
-use common::sockaddr::SockAddr;
 use tun::Tun;
 use tun::configuration::{Configurable, Configuration};
+use tun::sockaddr::SockAddr;
 
 use super::sys::*;
 
