@@ -1,16 +1,15 @@
-use std::mem;
-use std::ptr;
-use std::fs::File;
-use std::net::Ipv4Addr;
+use std::{mem, ptr};
 use std::ffi::{CStr, CString};
+use std::fs::File;
 use std::io::{self, Read, Write};
+use std::net::Ipv4Addr;
 use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 
-use libc::{socket, close, SOCK_DGRAM, AF_INET, c_char, O_RDWR, open};
+use libc::{AF_INET, O_RDWR, SOCK_DGRAM, c_char, close, open, socket};
 
-use tun::Tun;
 use common::error::*;
 use common::sockaddr::SockAddr;
+use tun::Tun;
 use tun::configuration::{Configurable, Configuration};
 
 use super::sys::*;

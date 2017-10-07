@@ -1,13 +1,12 @@
-use std::mem;
-use std::ptr;
+use std::{mem, ptr};
 use std::net::Ipv4Addr;
 
+#[cfg(target_os = "macos")]
+use libc::{c_uchar, c_uint};
 #[cfg(target_os = "linux")]
 use libc::{c_uint, c_ushort};
-#[cfg(target_os = "macos")]
-use libc::{c_uint, c_uchar};
 
-use libc::{sockaddr, sockaddr_in, in_addr};
+use libc::{in_addr, sockaddr, sockaddr_in};
 use libc::AF_INET as _AF_INET;
 
 use super::error::*;
@@ -53,8 +52,8 @@ impl From<Ipv4Addr> for SockAddr {
         addr.sin_family = AF_INET;
         addr.sin_port = 0;
         addr.sin_addr = in_addr {
-            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) |
-                ((parts[1] as c_uint) << 8) | ((parts[0] as c_uint)),
+            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) | ((parts[1] as c_uint) << 8) |
+                ((parts[0] as c_uint)),
         };
 
         SockAddr(addr)
@@ -72,8 +71,8 @@ impl From<Ipv4Addr> for SockAddr {
         addr.sin_len = 8;
         addr.sin_port = 0;
         addr.sin_addr = in_addr {
-            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) |
-                ((parts[1] as c_uint) << 8) | ((parts[0] as c_uint)),
+            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) | ((parts[1] as c_uint) << 8) |
+                ((parts[0] as c_uint)),
         };
 
         SockAddr(addr)

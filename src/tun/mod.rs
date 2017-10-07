@@ -17,8 +17,8 @@ pub use self::linux::create;
 pub use self::configuration::Configuration;
 
 use std::fmt::Debug;
+use std::io::{Read, Write};
 use std::net::Ipv4Addr;
-use std::io::{Write, Read};
 
 use common::error::*;
 

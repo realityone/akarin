@@ -1,4 +1,4 @@
-use libc::{c_int, c_char, c_uchar, sockaddr, c_short, c_ushort, c_void, c_uint};
+use libc::{c_char, c_int, c_short, c_uchar, c_uint, c_ushort, c_void, sockaddr};
 
 pub const IFNAMSIZ: usize = 16;
 

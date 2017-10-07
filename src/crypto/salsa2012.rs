@@ -1,8 +1,8 @@
 use sodiumoxide;
 
-use sodiumoxide::randombytes;
 use sodiumoxide::crypto::hash;
 use sodiumoxide::crypto::stream::salsa2012;
+use sodiumoxide::randombytes;
 
 use super::Crypto;
 use common::error::*;
@@ -10,10 +10,9 @@ use common::error::*;
 pub fn init_crypto(password: &str) -> Box<Crypto> {
     info!("Initializing crypto: `{}`", Salsa2012::name());
 
-    let crypto =
-        Box::new(Salsa2012::new(password.as_bytes())
-                     .map_err(|e| error!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
-                     .unwrap());
+    let crypto = Box::new(Salsa2012::new(password.as_bytes())
+                              .map_err(|e| error!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
+                              .unwrap());
 
     info!("Initializing crypto succeed: `{}`", Salsa2012::name());
     crypto

@@ -1,8 +1,8 @@
 use std::net::SocketAddr;
 
-use tun::Tun;
 use crypto::Crypto;
 use transport::Transport;
+use tun::Tun;
 
 #[derive(Debug)]
 pub enum Mode {

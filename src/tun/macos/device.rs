@@ -1,18 +1,16 @@
-use std::mem;
-use std::ptr;
-use std::fs::File;
+use std::{mem, ptr};
 use std::ffi::CStr;
-use std::str::FromStr;
-use std::net::Ipv4Addr;
+use std::fs::File;
 use std::io::{self, Read, Write};
+use std::net::Ipv4Addr;
 use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
+use std::str::FromStr;
 
-use libc::{socket, connect, close, getsockopt, SOCK_DGRAM, AF_INET, socklen_t, sockaddr, c_void,
-           c_char};
+use libc::{AF_INET, SOCK_DGRAM, c_char, c_void, close, connect, getsockopt, sockaddr, socket, socklen_t};
 
-use tun::Tun;
 use common::error::*;
 use common::sockaddr::SockAddr;
+use tun::Tun;
 use tun::configuration::{Configurable, Configuration};
 
 use super::sys::*;
@@ -31,9 +29,7 @@ pub struct Device {
 impl Device {
     pub unsafe fn request(&self) -> ifreq {
         let mut req: ifreq = mem::zeroed();
-        ptr::copy_nonoverlapping(self.name.as_ptr() as *const c_char,
-                                 req.ifr_name.as_mut_ptr(),
-                                 self.name.len());
+        ptr::copy_nonoverlapping(self.name.as_ptr() as *const c_char, req.ifr_name.as_mut_ptr(), self.name.len());
 
         req
     }
@@ -310,9 +306,7 @@ impl Configurable for Device {
 
 
         if unsafe {
-            connect(tun,
-                    &addr as *const sockaddr_ctl as *const sockaddr,
-                    mem::size_of_val(&addr) as socklen_t)
+            connect(tun, &addr as *const sockaddr_ctl as *const sockaddr, mem::size_of_val(&addr) as socklen_t)
         } < 0
         {
             return Err(io::Error::last_os_error().into());
