@@ -5,8 +5,8 @@ pub use self::sodium::Sodium;
 use common::error::*;
 
 pub trait Crypto {
-    fn init(&mut self) -> Result<()>;
-    fn name() -> String;
+    fn name(&self) -> String;
 
-    fn set_password(&mut self, password: &str) -> Result<()>;
+    fn encrypt_inplace(&self, message: &mut [u8]) -> Result<()>;
+    fn decrypt_inplace(&self, cipher_text: &mut [u8]) -> Result<()>;
 }
