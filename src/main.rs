@@ -20,7 +20,7 @@ mod transport;
 use common::error::*;
 
 fn init<C>(crypto: &mut C) -> Result<()>
-    where C: crypto::Crypto {
+    where C: crypto::Cipher {
     info!("Initializing crypto `{}`", C::name());
     if let Err(e) = crypto.init() {
         info!("Failed to init crypto: `{}`", C::name());

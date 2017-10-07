@@ -10,6 +10,22 @@ rust:
   - stable
   - nightly
 
+before_install: |
+  case $TRAVIS_OS_NAME in
+      osx)
+          brew udpate
+          brew install libsodium
+          ;;
+      linux)
+          git clone https://github.com/jedisct1/libsodium --branch stable
+          pushd libsodium
+          ./configure
+          make && make check
+          sudo make install
+          popd
+          ;;
+  esac
+
 script: |
   cargo=`which cargo`
   sudo $cargo test --features="travis-ci"

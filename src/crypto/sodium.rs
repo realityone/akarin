@@ -1,11 +1,11 @@
 use sodiumoxide;
 
-use super::Crypto;
+use super::Cipher;
 use common::error::*;
 
 pub struct Sodium;
 
-impl Crypto for Sodium {
+impl Cipher for Sodium {
     fn init(&mut self) -> Result<()> {
         if !sodiumoxide::init() {
             return Err(ErrorKind::InitCryptoFailed.into());
