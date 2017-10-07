@@ -12,7 +12,7 @@ pub fn init_crypto(password: &str) -> Box<Crypto> {
 
     let crypto =
         Box::new(Salsa2012::new(password.as_bytes())
-                     .map_err(|e| info!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
+                     .map_err(|e| error!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
                      .unwrap());
 
     info!("Initializing crypto succeed: `{}`", Salsa2012::name());
