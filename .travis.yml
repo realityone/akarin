@@ -17,6 +17,7 @@ before_install: |
           brew install libsodium
           ;;
       linux)
+          apt-get install -y pkg-config
           git clone https://github.com/jedisct1/libsodium --branch stable
           pushd libsodium
           ./configure
