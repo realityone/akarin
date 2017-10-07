@@ -12,5 +12,7 @@ pretty_env_logger = "0.1.1"
 sodiumoxide = "0.0.15"
 
 [features]
-travis-ci = ["tun-test"]
+default = ["libsodium"]
+libsodium = []
 tun-test = []
+travis-ci = ["tun-test", "default"]
