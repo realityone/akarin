@@ -261,10 +261,10 @@ impl Configurable for Device {
         let dev_id = match configuration.name.as_ref() {
             Some(name) => {
                 if name.len() > IFNAMSIZ {
-                    return Err(ErrorKind::NameTooLong.into());
+                    return Err(ErrorKind::TunNameTooLong.into());
                 }
                 if !name.starts_with("utun") {
-                    return Err(ErrorKind::InvalidName.into());
+                    return Err(ErrorKind::InvalidTunName.into());
                 }
                 u8::from_str(&name["utun".len()..])? as u8
             }
