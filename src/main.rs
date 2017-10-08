@@ -6,6 +6,7 @@ extern crate libc;
 extern crate sodiumoxide;
 #[macro_use]
 extern crate error_chain;
+extern crate transient_hashmap;
 extern crate pretty_env_logger;
 
 #[cfg(unix)]
