@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate log;
+extern crate mio;
 extern crate libc;
 extern crate sodiumoxide;
 #[macro_use]

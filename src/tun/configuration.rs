@@ -4,13 +4,13 @@ use common::error::*;
 
 #[derive(Clone, Default, Debug)]
 pub struct Configuration {
-    pub(crate) name: Option<String>,
-    pub(crate) address: Option<Ipv4Addr>,
-    pub(crate) destination: Option<Ipv4Addr>,
-    pub(crate) broadcast: Option<Ipv4Addr>,
-    pub(crate) netmask: Option<Ipv4Addr>,
-    pub(crate) mtu: Option<i32>,
-    pub(crate) enabled: bool,
+    pub name: Option<String>,
+    pub address: Option<Ipv4Addr>,
+    pub destination: Option<Ipv4Addr>,
+    pub broadcast: Option<Ipv4Addr>,
+    pub netmask: Option<Ipv4Addr>,
+    pub mtu: Option<i32>,
+    pub enabled: bool,
 }
 
 impl Configuration {
@@ -57,7 +57,7 @@ impl Configuration {
 
 pub trait Configurable {
     fn from_configuration(configuration: &Configuration) -> Result<Self>
-    where
-        Self: Sized;
+        where
+            Self: Sized;
     fn configure(&mut self, configuration: &Configuration) -> Result<()>;
 }

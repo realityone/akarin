@@ -4,7 +4,7 @@ use std::net::UdpSocket;
 
 use transient_hashmap::TransientHashMap;
 
-use super::{State, new_buff};
+use super::{Server, State, new_buff};
 use super::configuration::ServerConfiguration;
 use common::error::*;
 use crypto::Crypto;
@@ -58,5 +58,11 @@ impl<'a, 'b, 'c> AkarinServer<'a, 'b, 'c> {
 
             state: State::Down,
         }
+    }
+}
+
+impl<'a, 'b, 'c> Server for AkarinServer<'a, 'b, 'c> {
+    fn serve(&mut self) -> Result<()> {
+        unimplemented!()
     }
 }

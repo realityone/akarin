@@ -2,15 +2,15 @@ use std::net::SocketAddr;
 
 #[derive(Clone, Default, Debug)]
 pub struct ClientConfiguration {
-    pub(crate) server_address: Option<SocketAddr>,
-    pub(crate) mtu: Option<i32>,
+    pub server_address: Option<SocketAddr>,
+    pub mtu: Option<i32>,
 }
 
 
 #[derive(Clone, Default, Debug)]
 pub struct ServerConfiguration {
-    pub(crate) mtu: Option<i32>,
-    pub(crate) client_timeout: Option<u32>,
+    pub mtu: Option<i32>,
+    pub client_timeout: Option<u32>,
 }
 
 impl ClientConfiguration {

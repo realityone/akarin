@@ -1,6 +1,6 @@
 use std::net::UdpSocket;
 
-use super::{State, new_buff};
+use super::{Client, State, new_buff};
 use super::configuration::ClientConfiguration;
 use common::error::*;
 use crypto::Crypto;
@@ -30,5 +30,11 @@ impl<'a, 'b, 'c> AkarinClient<'a, 'b, 'c> {
 
             state: State::Down,
         }
+    }
+}
+
+impl<'a, 'b, 'c> Client for AkarinClient<'a, 'b, 'c> {
+    fn connect(&mut self) -> Result<()> {
+        unimplemented!()
     }
 }
