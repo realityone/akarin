@@ -1,4 +1,5 @@
-use std::net::UdpSocket;
+use tokio_core::net::UdpSocket;
+use tokio_core::reactor::{Core, Handle};
 
 use super::{Client, State, new_buff};
 use super::configuration::ClientConfiguration;
@@ -7,10 +8,11 @@ use crypto::Crypto;
 use tun::os::tokio::Device;
 
 #[derive(Debug)]
-pub struct AkarinClient<'a, 'b, 'c> {
-    tun: &'a Device,
-    crypto: &'b Crypto,
-    udp: &'c UdpSocket,
+pub struct AkarinClient<'a> {
+    tun: Device,
+    udp: UdpSocket,
+
+    crypto: &'a Crypto,
 
     tun_buff: Vec<u8>,
     udp_buff: Vec<u8>,
@@ -18,9 +20,8 @@ pub struct AkarinClient<'a, 'b, 'c> {
     state: State,
 }
 
-impl<'a, 'b, 'c> AkarinClient<'a, 'b, 'c> {
-    fn new<'d>(tun: &'a Device, crypto: &'b Crypto, udp: &'c UdpSocket, configuration: &'d ClientConfiguration)
-               -> Self {
+impl<'a> AkarinClient<'a> {
+    fn new<'d>(tun: Device, crypto: &'a Crypto, udp: UdpSocket, configuration: &'d ClientConfiguration) -> Self {
         AkarinClient {
             tun,
             crypto,
@@ -34,8 +35,8 @@ impl<'a, 'b, 'c> AkarinClient<'a, 'b, 'c> {
     }
 }
 
-impl<'a, 'b, 'c> Client for AkarinClient<'a, 'b, 'c> {
-    fn connect(&mut self) -> Result<()> {
+impl<'a> Client for AkarinClient<'a> {
+    fn connect(self, mut core: Core, mut handle: Handle) -> Result<()> {
         unimplemented!()
     }
 }

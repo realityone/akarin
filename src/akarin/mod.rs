@@ -2,6 +2,8 @@ pub mod server;
 pub mod client;
 pub mod configuration;
 
+use tokio_core::reactor::{Core, Handle};
+
 use common::error::*;
 
 #[derive(Debug)]
@@ -21,9 +23,9 @@ pub fn new_buff(mtu: usize) -> Vec<u8> {
 }
 
 pub trait Server {
-    fn serve(&mut self) -> Result<()>;
+    fn serve(self, mut core: Core, mut handle: Handle) -> Result<()>;
 }
 
 pub trait Client {
-    fn connect(&mut self) -> Result<()>;
+    fn connect(self, mut core: Core, mut handle: Handle) -> Result<()>;
 }

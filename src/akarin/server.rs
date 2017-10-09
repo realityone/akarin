@@ -1,7 +1,9 @@
 use std::fmt;
 use std::net::SocketAddr;
 
+use futures::Future;
 use tokio_core::net::UdpSocket;
+use tokio_core::reactor::{Core, Handle};
 use transient_hashmap::TransientHashMap;
 
 use super::{Server, State, new_buff};
@@ -15,10 +17,11 @@ type ClientToken = u64;
 type ClientMetadata = (ClientToken, SocketAddr);
 
 #[derive(Debug)]
-pub struct AkarinServer<'a, 'b, 'c> {
-    tun: &'a Device,
-    crypto: &'b Crypto,
-    udp: &'c UdpSocket,
+pub struct AkarinServer<'a> {
+    tun: Device,
+    udp: UdpSocket,
+
+    crypto: &'a Crypto,
 
     clients: ClientStorage,
 
@@ -44,9 +47,8 @@ impl fmt::Debug for ClientStorage {
     }
 }
 
-impl<'a, 'b, 'c> AkarinServer<'a, 'b, 'c> {
-    fn new<'d>(tun: &'a Device, crypto: &'b Crypto, udp: &'c UdpSocket, configuration: &'d ServerConfiguration)
-               -> Self {
+impl<'a> AkarinServer<'a> {
+    fn new<'b>(tun: Device, crypto: &'a Crypto, udp: UdpSocket, configuration: &'b ServerConfiguration) -> Self {
         AkarinServer {
             tun,
             crypto,
@@ -62,8 +64,11 @@ impl<'a, 'b, 'c> AkarinServer<'a, 'b, 'c> {
     }
 }
 
-impl<'a, 'b, 'c> Server for AkarinServer<'a, 'b, 'c> {
-    fn serve(&mut self) -> Result<()> {
-        unimplemented!()
+impl<'a> Server for AkarinServer<'a> {
+    fn serve(self, mut core: Core, mut handle: Handle) -> Result<()> {
+        let mut buff = vec![0u8; 1500];
+        let s = self.tun.read_dgram(&mut buff);
+        core.run(s);
+        Ok(())
     }
 }
