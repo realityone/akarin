@@ -57,7 +57,7 @@ impl Configuration {
 
 pub trait Configurable {
     fn from_configuration(configuration: &Configuration) -> Result<Self>
-        where
-            Self: Sized;
+    where
+        Self: Sized;
     fn configure(&mut self, configuration: &Configuration) -> Result<()>;
 }

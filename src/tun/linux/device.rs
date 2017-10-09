@@ -6,6 +6,9 @@ use std::net::Ipv4Addr;
 use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 
 use libc::{AF_INET, O_RDWR, SOCK_DGRAM, c_char, close, open, socket};
+use mio::{Poll, PollOpt, Ready, Token};
+use mio::event::Evented;
+use mio::unix::EventedFd;
 
 use common::error::*;
 use tun::Tun;
@@ -306,5 +309,19 @@ impl Configurable for Device {
         self.set_enabled(configuration.enabled)?;
 
         Ok(())
+    }
+}
+
+impl Evented for Device {
+    fn register(&self, poll: &Poll, token: Token, events: Ready, opts: PollOpt) -> io::Result<()> {
+        EventedFd(&self.as_raw_fd()).register(poll, token, events, opts)
+    }
+
+    fn reregister(&self, poll: &Poll, token: Token, events: Ready, opts: PollOpt) -> io::Result<()> {
+        EventedFd(&self.as_raw_fd()).reregister(poll, token, events, opts)
+    }
+
+    fn deregister(&self, poll: &Poll) -> io::Result<()> {
+        EventedFd(&self.as_raw_fd()).deregister(poll)
     }
 }

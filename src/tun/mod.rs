@@ -21,9 +21,11 @@ use std::fmt::Debug;
 use std::io::{Read, Write};
 use std::net::Ipv4Addr;
 
+use mio::event::Evented;
+
 use common::error::*;
 
-pub trait Tun: Read + Write + Debug {
+pub trait Tun: Read + Write + Debug + Evented {
     fn name(&self) -> &str;
 
     fn address(&self) -> Result<Ipv4Addr>;
