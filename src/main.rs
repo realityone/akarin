@@ -4,6 +4,8 @@
 extern crate log;
 extern crate mio;
 extern crate libc;
+extern crate tokio_core;
+#[cfg(feature = "libsodium")]
 extern crate sodiumoxide;
 #[macro_use]
 extern crate error_chain;

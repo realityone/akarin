@@ -7,6 +7,9 @@ use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use std::str::FromStr;
 
 use libc::{AF_INET, SOCK_DGRAM, c_char, c_void, close, connect, getsockopt, sockaddr, socket, socklen_t};
+use mio::{Poll, PollOpt, Ready, Token};
+use mio::event::Evented;
+use mio::unix::EventedFd;
 
 use common::error::*;
 use tun::Tun;
@@ -366,5 +369,19 @@ impl Configurable for Device {
         self.set_enabled(configuration.enabled)?;
 
         Ok(())
+    }
+}
+
+impl Evented for Device {
+    fn register(&self, poll: &Poll, token: Token, events: Ready, opts: PollOpt) -> io::Result<()> {
+        EventedFd(&self.as_raw_fd()).register(poll, token, events, opts)
+    }
+
+    fn reregister(&self, poll: &Poll, token: Token, events: Ready, opts: PollOpt) -> io::Result<()> {
+        EventedFd(&self.as_raw_fd()).reregister(poll, token, events, opts)
+    }
+
+    fn deregister(&self, poll: &Poll) -> io::Result<()> {
+        EventedFd(&self.as_raw_fd()).deregister(poll)
     }
 }
