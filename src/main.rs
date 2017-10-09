@@ -4,6 +4,9 @@
 extern crate log;
 extern crate mio;
 extern crate libc;
+#[macro_use]
+extern crate futures;
+#[macro_use]
 extern crate tokio_core;
 #[cfg(feature = "libsodium")]
 extern crate sodiumoxide;

@@ -1,0 +1,149 @@
+use std::io::{self, Read, Write};
+use std::mem;
+
+use futures::{Async, Future, Poll};
+use tokio_core::reactor::{Handle, PollEvented};
+
+use super::device;
+
+fn is_wouldblock<T>(r: &io::Result<T>) -> bool {
+    match *r {
+        Ok(_) => false,
+        Err(ref e) => e.kind() == io::ErrorKind::WouldBlock,
+    }
+}
+
+fn would_block() -> io::Error {
+    io::Error::new(io::ErrorKind::WouldBlock, "would block")
+}
+
+#[derive(Debug)]
+pub struct Device {
+    device: PollEvented<device::Device>,
+}
+
+impl Device {
+    fn new(device: device::Device, handle: &Handle) -> io::Result<Self> {
+        Ok(Self { device: PollEvented::new(device, handle)? })
+    }
+
+    pub fn write(&mut self, buff: &[u8]) -> io::Result<usize> {
+        if self.device.poll_write().is_not_ready() {
+            return Err(would_block());
+        }
+        let r = self.device.get_mut().write(buff);
+        if is_wouldblock(&r) {
+            self.device.need_write();
+        }
+        return r;
+    }
+
+    pub fn write_dgram<T>(self, buff: T) -> WriteTunDgram<T>
+    where
+        T: AsRef<[u8]>,
+    {
+        WriteTunDgram {
+            st: WriteTunDgramState::Writing {
+                device: self,
+                buff: buff,
+            },
+        }
+    }
+
+    pub fn read(&mut self, buff: &mut [u8]) -> io::Result<usize> {
+        if self.device.poll_read().is_not_ready() {
+            return Err(would_block());
+        }
+        let r = self.device.get_mut().read(buff);
+        if is_wouldblock(&r) {
+            self.device.need_read();
+        }
+        return r;
+    }
+
+    pub fn read_dgram<T>(self, buff: T) -> ReadTunDgram<T>
+    where
+        T: AsMut<[u8]>,
+    {
+        ReadTunDgram {
+            st: ReadTunDgramState::Reading {
+                device: self,
+                buff: buff,
+            },
+        }
+    }
+}
+
+pub struct WriteTunDgram<T> {
+    st: WriteTunDgramState<T>,
+}
+
+enum WriteTunDgramState<T> {
+    Writing { device: Device, buff: T },
+    Empty,
+}
+
+impl<T> Future for WriteTunDgram<T>
+where
+    T: AsRef<[u8]>,
+{
+    type Item = (Device, T);
+    type Error = io::Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        if let WriteTunDgramState::Writing {
+            ref mut device,
+            ref buff,
+        } = self.st
+        {
+            let n = try_nb!(device.write(buff.as_ref()));
+            if n < buff.as_ref().len() {
+                return Err(io::Error::new(io::ErrorKind::Other, "Couldn't send whole buffer".to_string()));
+            }
+        }
+        if let WriteTunDgramState::Writing { device, buff } = mem::replace(&mut self.st, WriteTunDgramState::Empty) {
+            return Ok(Async::Ready((device, buff)));
+        }
+
+        return Err(io::Error::new(io::ErrorKind::Other, "unreachable state".to_string()));
+    }
+}
+
+
+pub struct ReadTunDgram<T> {
+    st: ReadTunDgramState<T>,
+}
+
+enum ReadTunDgramState<T> {
+    #[allow(dead_code)]
+    Reading { device: Device, buff: T },
+    Empty,
+}
+
+impl<T> Future for ReadTunDgram<T>
+where
+    T: AsMut<[u8]>,
+{
+    type Item = (Device, T, usize);
+    type Error = io::Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        let received;
+
+        if let ReadTunDgramState::Reading {
+            ref mut device,
+            ref mut buff,
+        } = self.st
+        {
+            received = try_nb!(device.read(buff.as_mut()));
+        } else {
+            return Err(io::Error::new(io::ErrorKind::Other, "Can't read in current state".to_string()));
+        }
+
+        if let ReadTunDgramState::Reading { device, buff } = mem::replace(&mut self.st, ReadTunDgramState::Empty) {
+            return Ok(Async::Ready((device, buff, received)));
+        }
+
+        return Err(io::Error::new(io::ErrorKind::Other, "unreachable state".to_string()));
+    }
+}

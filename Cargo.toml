@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 error-chain = "0.11.0"
+futures = "0.1.16"
 libc = "0.2.32"
 log = "0.3.8"
 mio = "0.6.10"
@@ -18,6 +19,10 @@ default = ["libsodium"]
 libsodium = []
 travis-ci = ["tun-test", "default"]
 tun-test = []
+
+[target]
+
+[target."cfg(unix)"]
 
 [target."cfg(unix)".dependencies]
 ioctl-sys = "0.5.2"
