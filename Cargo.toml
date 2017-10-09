@@ -12,10 +12,7 @@ mio = "0.6.10"
 pretty_env_logger = "0.1.1"
 tokio-core = "0.1.10"
 transient-hashmap = "0.4.0"
-
-[dependencies.sodiumoxide]
-optional = true
-version = "0.0.15"
+sodiumoxide = "0.0.15"
 
 [features]
 default = ["libsodium"]

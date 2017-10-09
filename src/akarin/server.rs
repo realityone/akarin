@@ -1,14 +1,14 @@
 use std::fmt;
 use std::net::SocketAddr;
-use std::net::UdpSocket;
 
+use tokio_core::net::UdpSocket;
 use transient_hashmap::TransientHashMap;
 
 use super::{Server, State, new_buff};
 use super::configuration::ServerConfiguration;
 use common::error::*;
 use crypto::Crypto;
-use tun::Tun;
+use tun::os::tokio::Device;
 
 type ClientId = u8;
 type ClientToken = u64;
@@ -16,7 +16,7 @@ type ClientMetadata = (ClientToken, SocketAddr);
 
 #[derive(Debug)]
 pub struct AkarinServer<'a, 'b, 'c> {
-    tun: &'a Tun,
+    tun: &'a Device,
     crypto: &'b Crypto,
     udp: &'c UdpSocket,
 
@@ -45,7 +45,8 @@ impl fmt::Debug for ClientStorage {
 }
 
 impl<'a, 'b, 'c> AkarinServer<'a, 'b, 'c> {
-    fn new<'d>(tun: &'a Tun, crypto: &'b Crypto, udp: &'c UdpSocket, configuration: &'d ServerConfiguration) -> Self {
+    fn new<'d>(tun: &'a Device, crypto: &'b Crypto, udp: &'c UdpSocket, configuration: &'d ServerConfiguration)
+               -> Self {
         AkarinServer {
             tun,
             crypto,

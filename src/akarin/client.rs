@@ -4,11 +4,11 @@ use super::{Client, State, new_buff};
 use super::configuration::ClientConfiguration;
 use common::error::*;
 use crypto::Crypto;
-use tun::Tun;
+use tun::os::tokio::Device;
 
 #[derive(Debug)]
 pub struct AkarinClient<'a, 'b, 'c> {
-    tun: &'a Tun,
+    tun: &'a Device,
     crypto: &'b Crypto,
     udp: &'c UdpSocket,
 
@@ -19,7 +19,8 @@ pub struct AkarinClient<'a, 'b, 'c> {
 }
 
 impl<'a, 'b, 'c> AkarinClient<'a, 'b, 'c> {
-    fn new<'d>(tun: &'a Tun, crypto: &'b Crypto, udp: &'c UdpSocket, configuration: &'d ClientConfiguration) -> Self {
+    fn new<'d>(tun: &'a Device, crypto: &'b Crypto, udp: &'c UdpSocket, configuration: &'d ClientConfiguration)
+               -> Self {
         AkarinClient {
             tun,
             crypto,
