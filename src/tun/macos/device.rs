@@ -371,4 +371,4 @@ impl Configurable for Device {
     }
 }
 
-include!("../unix/mio.in");
+include!("../unix/mio.rs.in");

@@ -1,6 +1,6 @@
 pub mod mio {
     use std::io;
-    use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
+    use std::os::unix::io::AsRawFd;
 
     use mio::{Poll, PollOpt, Ready, Token};
     use mio::event::Evented;
