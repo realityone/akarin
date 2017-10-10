@@ -51,7 +51,7 @@ impl ClientStorage {
         self.id_set.iter().map(|i| *i).collect()
     }
 
-    pub fn reserve_id(&mut self, id: ClientId) -> Result<ClientId> {
+    pub unsafe fn reserve_id(&mut self, id: ClientId) -> Result<ClientId> {
         if !self.id_set.remove(&id) {
             return Err(ErrorKind::ReserveClientIDFailed.into());
         }
@@ -62,7 +62,7 @@ impl ClientStorage {
         self.id_set.iter().nth(0)
     }
 
-    pub fn insert_client(&mut self, meta: &ClientMetadata) -> Result<()> {
+    pub fn insert_client(&mut self, meta: &ClientMetadata) -> Result<ClientId> {
         let id = {
             match self.next_id() {
                 Some(id) => id.clone(),
@@ -70,17 +70,17 @@ impl ClientStorage {
             }
         };
         self.id_set.remove(&id);
-        self.storage.insert(id, meta.clone());
+        self.storage.insert(id, *meta);
 
-        Ok(())
+        Ok(id)
     }
 
     pub fn refresh_client(&mut self, id: ClientId, meta: &ClientMetadata) -> Result<()> {
-        if !self.id_set.contains(&id) {
+        if !self.compare_client(id, meta) {
             return Err(ErrorKind::NoSuchClientID.into());
         }
 
-        self.storage.insert(id, meta.clone());
+        self.storage.insert(id, *meta);
         Ok(())
     }
 
@@ -88,10 +88,11 @@ impl ClientStorage {
         self.storage.get(&id)
     }
 
-    pub fn match_client(&mut self, id: ClientId, meta: &ClientMetadata) -> bool {
-        if !self.id_set.contains(&id) {
+    pub fn compare_client(&mut self, id: ClientId, meta: &ClientMetadata) -> bool {
+        if self.id_set.contains(&id) {
             return false;
         }
+
         if let Some(ref stored) = self.storage.get(&id) {
             if stored == &meta {
                 return true;
@@ -158,18 +159,29 @@ impl<'a> Server for AkarinServer<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_client_storage() {
         let reserved = 2..10;
         let ref mut us = ClientStorage::new(0..255, 60);
         for r in reserved {
-            us.reserve_id(r);
+            unsafe {
+                us.reserve_id(r).unwrap();
+            }
         }
 
         let available_ids = us.available_ids();
         for id in available_ids {
             assert!(id < 2 || id >= 10);
         }
+
+        let client = (123u64, SocketAddr::from_str("192.168.1.1:80").unwrap());
+        let cid = us.insert_client(&client).unwrap();
+        us.refresh_client(cid, &client).unwrap();
+        assert!(us.refresh_client(cid + 1, &client).is_err());
+        assert!(us.compare_client(cid, &client));
+        assert_eq!(us.get(cid).unwrap(), &client);
+        assert!(us.get(cid + 1).is_none());
     }
 }
