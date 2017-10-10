@@ -6,7 +6,7 @@ use std::net::Ipv4Addr;
 use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use std::str::FromStr;
 
-use libc::{c_char, c_void, close, connect, getsockopt, sockaddr, socket, socklen_t, AF_INET, SOCK_DGRAM};
+use libc::{AF_INET, SOCK_DGRAM, c_char, c_void, close, connect, getsockopt, sockaddr, socket, socklen_t};
 
 use common::error::*;
 use tun::Tun;
@@ -282,9 +282,9 @@ impl Configurable for Device {
         let mut info = ctl_info {
             ctl_id: 0,
             ctl_name: {
-                let mut buffer = [0u8; 96];
-                buffer[..UTUN_CONTROL_NAME.len()].clone_from_slice(UTUN_CONTROL_NAME.as_bytes());
-                buffer
+                let mut bufer = [0u8; 96];
+                bufer[..UTUN_CONTROL_NAME.len()].clone_from_slice(UTUN_CONTROL_NAME.as_bytes());
+                bufer
             },
         };
 

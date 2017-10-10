@@ -14,7 +14,8 @@ pub trait Crypto: Debug {
 
 #[derive(Debug)]
 pub enum Ciphers {
-    #[cfg(feature = "libsodium")] SALSA2012,
+    #[cfg(feature = "libsodium")]
+    SALSA2012,
 }
 
 impl Ciphers {

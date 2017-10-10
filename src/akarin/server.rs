@@ -6,7 +6,7 @@ use tokio_core::net::UdpSocket;
 use tokio_core::reactor::{Core, Handle};
 use transient_hashmap::TransientHashMap;
 
-use super::{new_buff, Server, State};
+use super::{Server, State, new_buf};
 use super::configuration::ServerConfiguration;
 use common::error::*;
 use crypto::Crypto;
@@ -25,8 +25,8 @@ pub struct AkarinServer<'a> {
 
     clients: ClientStorage,
 
-    tun_buff: Vec<u8>,
-    udp_buff: Vec<u8>,
+    tun_buf: Vec<u8>,
+    udp_buf: Vec<u8>,
 
     state: State,
 }
@@ -37,9 +37,7 @@ pub struct ClientStorage {
 
 impl ClientStorage {
     fn new(lifetime: u32) -> Self {
-        ClientStorage {
-            storage: TransientHashMap::new(lifetime),
-        }
+        ClientStorage { storage: TransientHashMap::new(lifetime) }
     }
 }
 
@@ -58,8 +56,8 @@ impl<'a> AkarinServer<'a> {
 
             clients: ClientStorage::new(configuration.client_timeout.unwrap_or(60)),
 
-            tun_buff: new_buff(configuration.mtu.unwrap_or(1432) as usize),
-            udp_buff: new_buff(configuration.mtu.unwrap_or(1432) as usize),
+            tun_buf: new_buf(configuration.mtu.unwrap_or(1432) as usize),
+            udp_buf: new_buf(configuration.mtu.unwrap_or(1432) as usize),
 
             state: State::Down,
         }
@@ -72,14 +70,14 @@ impl<'a> Future for AkarinServer<'a> {
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
         loop {
-            let s = try_nb!(self.tun.read(&mut self.tun_buff));
-            println!("{:?}, {:?}", s, self.tun_buff);
+            let s = try_nb!(self.tun.read(&mut self.tun_buf));
+            println!("{:?}, {:?}", s, self.tun_buf);
         }
     }
 }
 
 impl<'a> Server for AkarinServer<'a> {
-    fn serve(mut self, mut core: Core, mut handle: Handle) -> Result<()> {
+    fn serve(mut self, mut core: Core, handle: Handle) -> Result<()> {
         core.run(self);
         Ok(())
     }
@@ -101,15 +99,15 @@ mod tests {
     use tun::configuration;
 
     #[test]
-    fn test_server_read() {
+    fn test_server_create() {
         let mut config = configuration::Configuration::default();
 
-        let addr = Ipv4Addr::from_str("10.0.0.2").unwrap();
+        let addr = Ipv4Addr::from_str("192.168.51.2").unwrap();
         let netmask = Ipv4Addr::from_str("255.255.255.0").unwrap();
-        let destination = Ipv4Addr::from_str("10.0.0.1").unwrap();
+        let destination = Ipv4Addr::from_str("192.168.51.1").unwrap();
         let mtu = 1480;
 
-        config.name("utun6")
+        config.name("utun7")
               .address(addr)
               .netmask(netmask)
               .destination(destination)
@@ -127,6 +125,5 @@ mod tests {
         let c = ServerConfiguration::default();
 
         let s = AkarinServer::new(tun, &crypto, udp, &c);
-        s.serve(core, handle);
     }
 }

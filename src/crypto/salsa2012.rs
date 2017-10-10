@@ -10,12 +10,9 @@ use common::error::*;
 pub fn init_crypto(password: &str) -> Box<Crypto> {
     info!("Initializing crypto: `{}`", Salsa2012::name());
 
-    let crypto = Box::new(Salsa2012::new(password.as_bytes()).map_err(|e| {
-                                                                          error!("Failed to init crypto: `{}`, {}",
-                                                                                 Salsa2012::name(),
-                                                                                 e)
-                                                                      })
-                                                             .unwrap());
+    let crypto = Box::new(Salsa2012::new(password.as_bytes())
+                              .map_err(|e| error!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
+                              .unwrap());
 
     info!("Initializing crypto succeed: `{}`", Salsa2012::name());
     crypto
@@ -51,9 +48,9 @@ impl Crypto for Salsa2012 {
         let mut cipher_text = vec![0u8; message.len() + salsa2012::NONCEBYTES];
 
         let ref nonce = {
-            let mut nonce_buff = [0u8; salsa2012::NONCEBYTES];
-            randombytes::randombytes_into(&mut nonce_buff);
-            salsa2012::Nonce(nonce_buff)
+            let mut nonce_buf = [0u8; salsa2012::NONCEBYTES];
+            randombytes::randombytes_into(&mut nonce_buf);
+            salsa2012::Nonce(nonce_buf)
         };
 
         cipher_text[..salsa2012::NONCEBYTES].clone_from_slice(nonce.as_ref());
@@ -67,9 +64,9 @@ impl Crypto for Salsa2012 {
         let mut message = vec![0u8; cipher_text.len() - salsa2012::NONCEBYTES];
 
         let ref nonce = {
-            let mut nonce_buff = [0u8; 8];
-            nonce_buff.clone_from_slice(&cipher_text[..8]);
-            salsa2012::Nonce(nonce_buff)
+            let mut nonce_buf = [0u8; 8];
+            nonce_buf.clone_from_slice(&cipher_text[..8]);
+            salsa2012::Nonce(nonce_buf)
         };
 
         message.clone_from_slice(&cipher_text[salsa2012::NONCEBYTES..]);
@@ -89,7 +86,8 @@ mod test {
         let origin_message = br#"# akarin
 
 Lightweight and stateless IP tunnel.
-"#.to_vec();
+"#
+                             .to_vec();
         let crypto = Salsa2012::new(b"realityone").unwrap();
 
         let cipher_text = {

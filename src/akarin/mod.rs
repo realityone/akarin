@@ -18,14 +18,14 @@ pub const AKARIN_PACKET_OFFSET: usize = 8;
 pub const AKARIN_USERTOKEN_LEN: usize = 8;
 
 
-pub fn new_buff(mtu: usize) -> Vec<u8> {
+pub fn new_buf(mtu: usize) -> Vec<u8> {
     vec![0u8; mtu + AKARIN_ZERO_BYTES + AKARIN_USERTOKEN_LEN]
 }
 
 pub trait Server {
-    fn serve(self, mut core: Core, mut handle: Handle) -> Result<()>;
+    fn serve(self, mut core: Core, handle: Handle) -> Result<()>;
 }
 
 pub trait Client {
-    fn connect(self, mut core: Core, mut handle: Handle) -> Result<()>;
+    fn connect(self, mut core: Core, handle: Handle) -> Result<()>;
 }
