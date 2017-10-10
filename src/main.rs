@@ -5,6 +5,7 @@ extern crate error_chain;
 #[macro_use]
 extern crate futures;
 extern crate libc;
+extern crate byteorder;
 #[macro_use]
 extern crate log;
 extern crate mio;

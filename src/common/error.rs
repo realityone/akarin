@@ -13,6 +13,9 @@ error_chain! {
         NoSuchClientID
         MaxClientExceed
         ReserveClientIDFailed
+
+        // Transport
+        InvalidByteSource
     }
 
     foreign_links {
