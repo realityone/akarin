@@ -6,7 +6,7 @@ use std::net::Ipv4Addr;
 use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use std::str::FromStr;
 
-use libc::{AF_INET, SOCK_DGRAM, c_char, c_void, close, connect, getsockopt, sockaddr, socket, socklen_t};
+use libc::{c_char, c_void, close, connect, getsockopt, sockaddr, socket, socklen_t, AF_INET, SOCK_DGRAM};
 
 use common::error::*;
 use tun::Tun;

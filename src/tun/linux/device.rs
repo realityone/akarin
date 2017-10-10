@@ -5,7 +5,7 @@ use std::io::{self, Read, Write};
 use std::net::Ipv4Addr;
 use std::os::unix::io::{AsRawFd, FromRawFd, RawFd};
 
-use libc::{AF_INET, O_RDWR, SOCK_DGRAM, c_char, close, open, socket};
+use libc::{c_char, close, open, socket, AF_INET, O_RDWR, SOCK_DGRAM};
 
 use common::error::*;
 use tun::Tun;

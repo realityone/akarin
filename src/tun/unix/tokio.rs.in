@@ -23,7 +23,7 @@ pub struct Device {
 }
 
 impl Device {
-    fn new(device: device::Device, handle: &Handle) -> io::Result<Self> {
+    pub fn new(device: device::Device, handle: &Handle) -> io::Result<Self> {
         Ok(Self { device: PollEvented::new(device, handle)? })
     }
 

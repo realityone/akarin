@@ -1,19 +1,19 @@
 #![allow(dead_code)]
 
 #[macro_use]
-extern crate log;
-extern crate mio;
-extern crate libc;
+extern crate error_chain;
 #[macro_use]
 extern crate futures;
+extern crate libc;
 #[macro_use]
-extern crate tokio_core;
+extern crate log;
+extern crate mio;
+extern crate pretty_env_logger;
 #[cfg(feature = "libsodium")]
 extern crate sodiumoxide;
 #[macro_use]
-extern crate error_chain;
+extern crate tokio_core;
 extern crate transient_hashmap;
-extern crate pretty_env_logger;
 
 #[cfg(unix)]
 #[macro_use]

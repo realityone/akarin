@@ -1,7 +1,7 @@
 use tokio_core::net::UdpSocket;
 use tokio_core::reactor::{Core, Handle};
 
-use super::{Client, State, new_buff};
+use super::{new_buff, Client, State};
 use super::configuration::ClientConfiguration;
 use common::error::*;
 use crypto::Crypto;

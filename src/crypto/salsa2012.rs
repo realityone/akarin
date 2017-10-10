@@ -10,9 +10,12 @@ use common::error::*;
 pub fn init_crypto(password: &str) -> Box<Crypto> {
     info!("Initializing crypto: `{}`", Salsa2012::name());
 
-    let crypto = Box::new(Salsa2012::new(password.as_bytes())
-                              .map_err(|e| error!("Failed to init crypto: `{}`, {}", Salsa2012::name(), e))
-                              .unwrap());
+    let crypto = Box::new(Salsa2012::new(password.as_bytes()).map_err(|e| {
+                                                                          error!("Failed to init crypto: `{}`, {}",
+                                                                                 Salsa2012::name(),
+                                                                                 e)
+                                                                      })
+                                                             .unwrap());
 
     info!("Initializing crypto succeed: `{}`", Salsa2012::name());
     crypto
@@ -86,8 +89,7 @@ mod test {
         let origin_message = br#"# akarin
 
 Lightweight and stateless IP tunnel.
-"#
-                             .to_vec();
+"#.to_vec();
         let crypto = Salsa2012::new(b"realityone").unwrap();
 
         let cipher_text = {

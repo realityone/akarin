@@ -52,8 +52,8 @@ impl From<Ipv4Addr> for SockAddr {
         addr.sin_family = AF_INET;
         addr.sin_port = 0;
         addr.sin_addr = in_addr {
-            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) | ((parts[1] as c_uint) << 8) |
-                ((parts[0] as c_uint)),
+            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) | ((parts[1] as c_uint) << 8)
+                | ((parts[0] as c_uint)),
         };
 
         SockAddr(addr)
@@ -71,8 +71,8 @@ impl From<Ipv4Addr> for SockAddr {
         addr.sin_len = 8;
         addr.sin_port = 0;
         addr.sin_addr = in_addr {
-            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) | ((parts[1] as c_uint) << 8) |
-                ((parts[0] as c_uint)),
+            s_addr: ((parts[3] as c_uint) << 24) | ((parts[2] as c_uint) << 16) | ((parts[1] as c_uint) << 8)
+                | ((parts[0] as c_uint)),
         };
 
         SockAddr(addr)

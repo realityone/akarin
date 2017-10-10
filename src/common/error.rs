@@ -7,6 +7,9 @@ error_chain! {
 
         // Crypto
         InitCryptoFailed
+
+        // Akarin
+        ServerError
     }
 
     foreign_links {
