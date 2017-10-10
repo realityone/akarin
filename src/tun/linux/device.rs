@@ -256,8 +256,7 @@ impl Configurable for Device {
             };
         }
 
-        // TODO: add IFF_NO_PI flag?
-        req.ifr_ifru.ifru_flags = IFF_TUN;
+        req.ifr_ifru.ifru_flags = IFF_TUN | IFF_NO_PI;
 
         unsafe {
             if tunsetiff(tun, &mut req as *mut _ as *mut _) < 0 {

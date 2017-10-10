@@ -19,6 +19,12 @@ pub fn create(configuration: &Configuration) -> Result<Device> {
     Device::from_configuration(&configuration)
 }
 
+const IPV4: u8 = 4u8;
+const IPV6: u8 = 6u8;
+const IP_HEADER_LEN: usize = 4;
+const IPV4_HEADER: [u8; 4] = [0, 0, 0, 2];
+const IPV6_HEADER: [u8; 4] = [0, 0, 0, 10];
+
 #[derive(Debug)]
 pub struct Device {
     name: String,
@@ -77,7 +83,29 @@ impl Read for Device {
 
 impl Write for Device {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        self.tun.write(buf)
+        if !buf.len() > 0 {
+            return Ok(0);
+        };
+        let mut data = Vec::with_capacity(buf.len() + IP_HEADER_LEN);
+
+        match buf[0] & 0xF {
+            IPV4 => {
+                data.extend_from_slice(&IPV4_HEADER);
+            }
+            IPV6 => data.extend_from_slice(&IPV6_HEADER),
+            _ => {}
+        };
+
+        match self.tun.write(&data) {
+            Ok(len) => {
+                Ok(if len > IP_HEADER_LEN {
+                       len - IP_HEADER_LEN
+                   } else {
+                       0
+                   })
+            }
+            Err(e) => Err(e),
+        }
     }
 
     fn flush(&mut self) -> io::Result<()> {

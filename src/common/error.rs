@@ -10,6 +10,9 @@ error_chain! {
 
         // Akarin
         ServerError
+        NoSuchClientID
+        MaxClientExceed
+        ReserveClientIDFailed
     }
 
     foreign_links {

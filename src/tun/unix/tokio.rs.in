@@ -6,17 +6,6 @@ use tokio_core::reactor::{Handle, PollEvented};
 
 use super::device;
 
-fn is_wouldblock<T>(r: &io::Result<T>) -> bool {
-    match *r {
-        Ok(_) => false,
-        Err(ref e) => e.kind() == io::ErrorKind::WouldBlock,
-    }
-}
-
-fn would_block() -> io::Error {
-    io::Error::new(io::ErrorKind::WouldBlock, "would block")
-}
-
 #[derive(Debug)]
 pub struct Device {
     device: PollEvented<device::Device>,

@@ -1,5 +1,8 @@
-use std::{fmt, io};
+use std::{fmt, io, mem};
+use std::collections::HashSet;
+use std::iter::FromIterator;
 use std::net::SocketAddr;
+use std::ops::Range;
 
 use futures::{Future, Poll};
 use tokio_core::net::UdpSocket;
@@ -12,7 +15,7 @@ use common::error::*;
 use crypto::Crypto;
 use tun::os::tokio::Device;
 
-type ClientId = u8;
+type ClientId = u32;
 type ClientToken = u64;
 type ClientMetadata = (ClientToken, SocketAddr);
 
@@ -32,12 +35,80 @@ pub struct AkarinServer<'a> {
 }
 
 pub struct ClientStorage {
+    id_set: HashSet<ClientId>,
     storage: TransientHashMap<ClientId, ClientMetadata>,
 }
 
 impl ClientStorage {
-    fn new(lifetime: u32) -> Self {
-        ClientStorage { storage: TransientHashMap::new(lifetime) }
+    pub fn new(id_range: Range<ClientId>, lifetime: u32) -> Self {
+        ClientStorage {
+            id_set: HashSet::from_iter(id_range.into_iter()),
+            storage: TransientHashMap::new(lifetime),
+        }
+    }
+
+    pub fn available_ids(&self) -> Vec<ClientId> {
+        self.id_set.iter().map(|i| *i).collect()
+    }
+
+    pub fn reserve_id(&mut self, id: ClientId) -> Result<ClientId> {
+        if !self.id_set.remove(&id) {
+            return Err(ErrorKind::ReserveClientIDFailed.into());
+        }
+        Ok(id)
+    }
+
+    fn next_id(&self) -> Option<&ClientId> {
+        self.id_set.iter().nth(0)
+    }
+
+    pub fn insert_client(&mut self, meta: &ClientMetadata) -> Result<()> {
+        let id = {
+            match self.next_id() {
+                Some(id) => id.clone(),
+                None => return Err(ErrorKind::MaxClientExceed.into()),
+            }
+        };
+        self.id_set.remove(&id);
+        self.storage.insert(id, meta.clone());
+
+        Ok(())
+    }
+
+    pub fn refresh_client(&mut self, id: ClientId, meta: &ClientMetadata) -> Result<()> {
+        if !self.id_set.contains(&id) {
+            return Err(ErrorKind::NoSuchClientID.into());
+        }
+
+        self.storage.insert(id, meta.clone());
+        Ok(())
+    }
+
+    pub fn get(&mut self, id: ClientId) -> Option<&ClientMetadata> {
+        self.storage.get(&id)
+    }
+
+    pub fn match_client(&mut self, id: ClientId, meta: &ClientMetadata) -> bool {
+        if !self.id_set.contains(&id) {
+            return false;
+        }
+        if let Some(ref stored) = self.storage.get(&id) {
+            if stored == &meta {
+                return true;
+            }
+        }
+        false
+    }
+
+    pub fn remove_client(&mut self, id: ClientId) {
+        self.id_set.insert(id);
+        self.storage.remove(&id);
+    }
+
+    pub fn prune(&mut self) {
+        for id in self.storage.prune().iter() {
+            self.id_set.insert(*id);
+        }
     }
 }
 
@@ -54,7 +125,7 @@ impl<'a> AkarinServer<'a> {
             crypto,
             udp,
 
-            clients: ClientStorage::new(configuration.client_timeout.unwrap_or(60)),
+            clients: ClientStorage::new(0..255, configuration.client_timeout.unwrap_or(60)),
 
             tun_buf: new_buf(configuration.mtu.unwrap_or(1432) as usize),
             udp_buf: new_buf(configuration.mtu.unwrap_or(1432) as usize),
@@ -87,43 +158,18 @@ impl<'a> Server for AkarinServer<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::net::Ipv4Addr;
-    use std::net::SocketAddr;
-    use std::str::FromStr;
-    use tun::os::create;
-
-    use crypto::salsa2012::Salsa2012;
-    use tokio_core::net::UdpSocket;
-    use tokio_core::reactor::{Core, Handle};
-    use tun::Tun;
-    use tun::configuration;
 
     #[test]
-    fn test_server_create() {
-        let mut config = configuration::Configuration::default();
+    fn test_client_storage() {
+        let reserved = 2..10;
+        let ref mut us = ClientStorage::new(0..255, 60);
+        for r in reserved {
+            us.reserve_id(r);
+        }
 
-        let addr = Ipv4Addr::from_str("192.168.51.2").unwrap();
-        let netmask = Ipv4Addr::from_str("255.255.255.0").unwrap();
-        let destination = Ipv4Addr::from_str("192.168.51.1").unwrap();
-        let mtu = 1480;
-
-        config.name("utun7")
-              .address(addr)
-              .netmask(netmask)
-              .destination(destination)
-              .mtu(mtu)
-              .up();
-
-        let mut core = Core::new().unwrap();
-        let handle = core.handle();
-
-        let tun = Device::new(create(&config).unwrap(), &handle).unwrap();
-        let addr: SocketAddr = "127.0.0.1:12345".parse().unwrap();
-        let udp = UdpSocket::bind(&addr, &handle).unwrap();
-        let crypto = Salsa2012::new(b"realityone").unwrap();
-
-        let c = ServerConfiguration::default();
-
-        let s = AkarinServer::new(tun, &crypto, udp, &c);
+        let available_ids = us.available_ids();
+        for id in available_ids {
+            assert!(id < 2 || id >= 10);
+        }
     }
 }
