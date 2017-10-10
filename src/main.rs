@@ -4,6 +4,8 @@
 extern crate error_chain;
 #[macro_use]
 extern crate futures;
+#[macro_use]
+extern crate lazy_static;
 extern crate libc;
 extern crate byteorder;
 #[macro_use]

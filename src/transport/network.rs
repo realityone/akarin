@@ -1,8 +1,13 @@
 use std::io::Cursor;
+use std::mem;
 
 use byteorder::{BigEndian, ReadBytesExt};
 
 use common::error::*;
+
+lazy_static!{
+   pub static ref IPV4_HEADER_LEN: usize = mem::size_of::<IPv4Header>();
+}
 
 #[repr(C, packed)]
 #[derive(Default, Clone, Copy)]
@@ -22,18 +27,18 @@ pub struct IPv4Header {
 impl From<[u8; 20]> for IPv4Header {
     fn from(bytes: [u8; 20]) -> Self {
         let mut bytes = Cursor::new(bytes);
-        let mut hdr = IPv4Header::default();
-        hdr.version_ihl = bytes.read_u8().unwrap();
-        hdr.type_of_service = bytes.read_u8().unwrap();
-        hdr.total_length = bytes.read_u16::<BigEndian>().unwrap();
-        hdr.identification = bytes.read_u16::<BigEndian>().unwrap();
-        hdr.flags_fragment_offset = bytes.read_u16::<BigEndian>().unwrap();
-        hdr.time_to_live = bytes.read_u8().unwrap();
-        hdr.protocol = bytes.read_u8().unwrap();
-        hdr.header_checksum = bytes.read_u16::<BigEndian>().unwrap();
-        hdr.source_address = bytes.read_u32::<BigEndian>().unwrap();
-        hdr.destination_address = bytes.read_u32::<BigEndian>().unwrap();
-        hdr
+        let mut header = IPv4Header::default();
+        header.version_ihl = bytes.read_u8().unwrap();
+        header.type_of_service = bytes.read_u8().unwrap();
+        header.total_length = bytes.read_u16::<BigEndian>().unwrap();
+        header.identification = bytes.read_u16::<BigEndian>().unwrap();
+        header.flags_fragment_offset = bytes.read_u16::<BigEndian>().unwrap();
+        header.time_to_live = bytes.read_u8().unwrap();
+        header.protocol = bytes.read_u8().unwrap();
+        header.header_checksum = bytes.read_u16::<BigEndian>().unwrap();
+        header.source_address = bytes.read_u32::<BigEndian>().unwrap();
+        header.destination_address = bytes.read_u32::<BigEndian>().unwrap();
+        header
     }
 }
 

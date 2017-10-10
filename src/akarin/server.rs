@@ -13,6 +13,7 @@ use super::{Server, State, new_buf};
 use super::configuration::ServerConfiguration;
 use common::error::*;
 use crypto::Crypto;
+use transport::network::{IPV4_HEADER_LEN, IPv4Header};
 use tun::os::tokio::Device;
 
 type ClientId = u32;
@@ -142,8 +143,18 @@ impl<'a> Future for AkarinServer<'a> {
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
         loop {
-            let s = try_nb!(self.tun.read(&mut self.tun_buf));
-            println!("{:?}, {:?}", s, self.tun_buf);
+            if try_nb!(self.tun.read(&mut self.tun_buf)) < *IPV4_HEADER_LEN {
+                return Err(io::ErrorKind::UnexpectedEof.into());
+            };
+
+            let header = {
+                let mut header_bytes = [0u8; 20];
+                header_bytes.copy_from_slice(&self.tun_buf[..*IPV4_HEADER_LEN]);
+                IPv4Header::from(header_bytes)
+            };
+
+            let client_id = header.destination_address;
+            if let Some(&(token, sockaddr)) = self.clients.get(client_id) {}
         }
     }
 }
