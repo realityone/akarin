@@ -22,5 +22,6 @@ error_chain! {
         Io(::std::io::Error);
         Nul(::std::ffi::NulError);
         ParseNum(::std::num::ParseIntError);
+        CryptoError(::ring::error::Unspecified);
     }
 }

@@ -1,5 +1,4 @@
-#[cfg(feature = "libsodium")]
-pub mod salsa2012;
+pub mod chacha20_poly1305;
 
 use std::fmt::Debug;
 
@@ -12,17 +11,16 @@ pub trait Crypto: Debug {
     fn decrypt(&self, cipher_text: &[u8]) -> Result<Vec<u8>>;
 }
 
+#[allow(non_camel_case_types)]
 #[derive(Debug)]
 pub enum Ciphers {
-    #[cfg(feature = "libsodium")]
-    SALSA2012,
+    CHACHA20_POLY1305,
 }
 
 impl Ciphers {
     pub fn init(self, password: &str) -> Box<Crypto> {
         match self {
-            #[cfg(feature = "libsodium")]
-            Ciphers::SALSA2012 => salsa2012::init_crypto(password),
+            Ciphers::CHACHA20_POLY1305 => chacha20_poly1305::init_crypto(password),
         }
     }
 }
@@ -30,10 +28,8 @@ impl Ciphers {
 impl<'a> From<&'a str> for Ciphers {
     fn from(name: &str) -> Self {
         match name {
-            #[cfg(feature = "libsodium")]
-            "libsodium" => Ciphers::SALSA2012,
-            #[cfg(feature = "libsodium")]
-            _ => Ciphers::SALSA2012,
+            "chacha20_poly1305" => Ciphers::CHACHA20_POLY1305,
+            _ => Ciphers::CHACHA20_POLY1305,
         }
     }
 }

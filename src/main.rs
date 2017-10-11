@@ -6,14 +6,13 @@ extern crate error_chain;
 extern crate futures;
 #[macro_use]
 extern crate lazy_static;
+extern crate ring;
 extern crate libc;
 extern crate byteorder;
 #[macro_use]
 extern crate log;
 extern crate mio;
 extern crate pretty_env_logger;
-#[cfg(feature = "libsodium")]
-extern crate sodiumoxide;
 #[macro_use]
 extern crate tokio_core;
 extern crate transient_hashmap;
@@ -35,5 +34,5 @@ fn main() {
     pretty_env_logger::init().unwrap();
 
     let password = "realityone";
-    let crypto = Ciphers::SALSA2012.init(password);
+    let crypto = Ciphers::CHACHA20_POLY1305.init(password);
 }

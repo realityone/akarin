@@ -2,7 +2,6 @@
 authors = ["realityone <realityone@me.com>"]
 name = "akarin"
 version = "0.1.0"
-
 [dependencies]
 byteorder = "1.1.0"
 error-chain = "0.11.0"
@@ -12,7 +11,7 @@ libc = "0.2.32"
 log = "0.3.8"
 mio = "0.6.10"
 pretty_env_logger = "0.1.1"
-sodiumoxide = "0.0.15"
+ring = "0.12.1"
 tokio-core = "0.1.10"
 transient-hashmap = "0.4.0"
 
@@ -23,8 +22,6 @@ travis-ci = ["tun-test", "default"]
 tun-test = []
 
 [target]
-
 [target."cfg(unix)"]
-
 [target."cfg(unix)".dependencies]
 ioctl-sys = "0.5.2"
