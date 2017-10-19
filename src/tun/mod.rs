@@ -4,12 +4,12 @@ pub mod configuration;
 
 
 #[cfg(target_os = "macos")]
-mod macos;
+pub mod macos;
 #[cfg(target_os = "macos")]
 pub use self::macos as platform;
 
 #[cfg(target_os = "linux")]
-mod linux;
+pub mod linux;
 #[cfg(target_os = "linux")]
 pub use self::linux as platform;
 
