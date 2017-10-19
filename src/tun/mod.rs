@@ -6,21 +6,21 @@ pub mod configuration;
 #[cfg(target_os = "macos")]
 pub mod macos;
 #[cfg(target_os = "macos")]
-pub use self::macos as platform;
+pub use self::macos as os;
 
 #[cfg(target_os = "linux")]
 pub mod linux;
 #[cfg(target_os = "linux")]
-pub use self::linux as platform;
+pub use self::linux as os;
 
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
-pub mod platform {
+pub mod os {
     pub fn create() -> Result<Tun> {
         unimplemented!();
     }
 }
 
-pub use self::platform::create;
+pub use self::os::create;
 
 pub use self::configuration::Configuration;
 
