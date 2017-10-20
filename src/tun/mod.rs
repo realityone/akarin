@@ -1,20 +1,25 @@
-#[cfg(target_os = "macos")]
-pub mod macos;
-#[cfg(target_os = "linux")]
-pub mod linux;
 pub mod sockaddr;
 pub mod configuration;
 
+
+#[cfg(target_os = "macos")]
+pub mod macos;
 #[cfg(target_os = "macos")]
 pub use self::macos as os;
-#[cfg(target_os = "macos")]
-pub use self::macos::create;
 
+#[cfg(target_os = "linux")]
+pub mod linux;
 #[cfg(target_os = "linux")]
 pub use self::linux as os;
-#[cfg(target_os = "linux")]
-pub use self::linux::create;
 
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub mod os {
+    pub fn create() -> Result<Tun> {
+        unimplemented!();
+    }
+}
+
+pub use self::os::create;
 pub use self::configuration::Configuration;
 
 use std::fmt::Debug;
