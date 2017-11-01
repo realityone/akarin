@@ -86,26 +86,7 @@ impl Write for Device {
         if !buf.len() > 0 {
             return Ok(0);
         };
-        let mut data = Vec::with_capacity(buf.len() + IP_HEADER_LEN);
-
-        match buf[0] & 0xF {
-            IPV4 => {
-                data.extend_from_slice(&IPV4_HEADER);
-            }
-            IPV6 => data.extend_from_slice(&IPV6_HEADER),
-            _ => {}
-        };
-
-        match self.tun.write(&data) {
-            Ok(len) => {
-                Ok(if len > IP_HEADER_LEN {
-                       len - IP_HEADER_LEN
-                   } else {
-                       0
-                   })
-            }
-            Err(e) => Err(e),
-        }
+        self.tun.write(&data)
     }
 
     fn flush(&mut self) -> io::Result<()> {
