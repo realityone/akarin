@@ -77,7 +77,16 @@ impl Device {
 
 impl Read for Device {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.tun.read(buf)
+        let mut rbuf = Vec::with_capacity(buf.len());
+        let rsize = self.tun.read(&mut rbuf)?;
+        let mut offset = 0;
+        if rsize > IP_HEADER_LEN {
+            offset += IP_HEADER_LEN;
+        };
+        let csize = rsize - offset;
+
+        buf[..csize].copy_from_slice(&rbuf[offset..]);
+        Ok(csize)
     }
 }
 
@@ -86,26 +95,21 @@ impl Write for Device {
         if !buf.len() > 0 {
             return Ok(0);
         };
-        let mut data = Vec::with_capacity(buf.len() + IP_HEADER_LEN);
+        let mut wbuf = Vec::with_capacity(buf.len() + IP_HEADER_LEN);
 
         match buf[0] & 0xF {
-            IPV4 => {
-                data.extend_from_slice(&IPV4_HEADER);
-            }
-            IPV6 => data.extend_from_slice(&IPV6_HEADER),
+            IPV4 => wbuf.extend_from_slice(&IPV4_HEADER),
+            IPV6 => wbuf.extend_from_slice(&IPV6_HEADER),
             _ => {}
         };
+        wbuf.extend_from_slice(&buf);
 
-        match self.tun.write(&data) {
-            Ok(len) => {
-                Ok(if len > IP_HEADER_LEN {
-                       len - IP_HEADER_LEN
-                   } else {
-                       0
-                   })
-            }
-            Err(e) => Err(e),
-        }
+        let wsize = self.tun.write(&wbuf)?;
+        Ok(if wsize > IP_HEADER_LEN {
+               wsize - IP_HEADER_LEN
+           } else {
+               0
+           })
     }
 
     fn flush(&mut self) -> io::Result<()> {
